@@ -1,0 +1,88 @@
+{
+  "Comment": "PDF analysis pipeline: ParseDocument -> AnalyzeDocument",
+  "StartAt": "ParseDocument",
+  "States": {
+    "ParseDocument": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ParseLambdaArn}",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "doc_id.$": "$.Payload.doc_id",
+        "bucket.$": "$.Payload.bucket",
+        "s3_key.$": "$.Payload.s3_key",
+        "text_s3_key.$": "$.Payload.text_s3_key"
+      },
+      "ResultPath": "$",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "PipelineFailed",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "AnalyzeDocument"
+    },
+    "AnalyzeDocument": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${AnalyzeLambdaArn}",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "doc_id.$": "$.Payload.doc_id",
+        "bucket.$": "$.Payload.bucket",
+        "s3_key.$": "$.Payload.s3_key",
+        "text_s3_key.$": "$.Payload.text_s3_key",
+        "result_s3_key.$": "$.Payload.result_s3_key",
+        "status.$": "$.Payload.status"
+      },
+      "ResultPath": "$",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "PipelineFailed",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "PipelineSucceeded"
+    },
+    "PipelineSucceeded": {
+      "Type": "Succeed"
+    },
+    "PipelineFailed": {
+      "Type": "Fail",
+      "Error": "PipelineError",
+      "Cause": "A pipeline step failed. Check DynamoDB error_message for details."
+    }
+  }
+}
