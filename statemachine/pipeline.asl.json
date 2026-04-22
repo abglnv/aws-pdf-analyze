@@ -6,7 +6,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": "${ParseLambdaArn}",
+        "FunctionName": "LAMBDA",
         "Payload.$": "$"
       },
       "ResultSelector": {
@@ -42,7 +42,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke",
       "Parameters": {
-        "FunctionName": "${AnalyzeLambdaArn}",
+        "FunctionName": "LAMBDA",
         "Payload.$": "$"
       },
       "ResultSelector": {

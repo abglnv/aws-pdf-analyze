@@ -1,0 +1,18 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Effect": "Allow",
+			"Action": [
+				"s3:GetObject",
+				"s3:PutObject"
+			],
+			"Resource": "arn:aws:s3:::pdf-analyzer-1283/documents/*"
+		},
+		{
+			"Effect": "Allow",
+			"Action": "dynamodb:UpdateItem",
+			"Resource": "arn:aws:dynamodb:*:*:table/INTERN_DOCUMENTS"
+		}
+	]
+}
